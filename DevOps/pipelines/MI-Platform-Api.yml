@@ -1,0 +1,48 @@
+name: MI-Platform-API-CI-CD
+
+pool:
+  vmImage: 'windows-latest'
+  
+pr:
+  branches:
+    include:
+      - main
+
+trigger: none
+
+stages:
+  - stage: Build
+    displayName: Build API
+    jobs:
+    - job: Build
+      displayName: Build
+      steps:
+        - task: UseDotNet@2
+          displayName: 'Install .NET Core SDK'
+          inputs:
+            version: 7.x
+            performMultiLevelLookup: true
+
+        - task: DotNetCoreCLI@2
+          displayName: Restore
+          inputs:
+            command: restore
+            projects: '**/*.csproj'
+            restoreArguments: '--force'
+            feedsToUse: 'select'
+            noCache: true
+
+        - task: DotNetCoreCLI@2
+          displayName: Build
+          inputs:
+            command: build
+            projects: '**/*.csproj'
+            arguments: '--configuration $(buildConfiguration)'      
+       
+        - task: DotNetCoreCLI@2
+          displayName: Publish
+          inputs:
+            command: publish
+            publishWebProjects: True
+            arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+            zipAfterPublish: True

@@ -1,0 +1,28 @@
+steps:
+  - checkout: self
+    submodules: true
+  - task: Npm@1
+    displayName: 'NPM Install'
+    inputs:
+    workingDir: "Web"
+    verbose: false
+  - task: Npm@1
+    displayName: 'Get Angular CLI'
+    inputs:
+    command: custom
+    workingDir: "Web"
+    verbose: false
+    customCommand: 'install -g @angular/cli'
+  - script: 'ng build --configuration production --aot'
+    workingDirectory: "Web"
+    displayName: 'Build Angular'
+  - task: CopyFiles@2
+    inputs:
+    SourceFolder: 'Web/dist'
+    Contents: '**'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  - task: PublishBuildArtifacts@1
+    inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'

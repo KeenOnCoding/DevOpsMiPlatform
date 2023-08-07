@@ -1,0 +1,32 @@
+name: MI-Platform-Web-CI-CD
+
+pool:
+  vmImage: 'windows-latest'
+  
+pr:
+  branches:
+    include:
+      - main
+
+trigger: none
+
+stages:
+  - stage: Build_Web
+    displayName: Build Web
+    jobs:
+    - job: Build
+      displayName: Build
+      steps:
+        - template: templates/steps/ap-steps-web-build.yml
+
+  - template: templates/steps/ap-steps-web-deploy.yml
+    parameters:
+      azureSubscription: US-AZSUB-AME-AUD-MPI BACKEND INFRASTRUCTURE-NPD 
+      environment: Sandbox
+      configuration: sb
+  
+  - template: templates/steps/ap-steps-web-deploy.yml
+    parameters:
+      azureSubscription: US-AZSUB-AME-AUD-MPI BACKEND INFRASTRUCTURE-NPD 
+      environment: DEV
+      configuration: dev

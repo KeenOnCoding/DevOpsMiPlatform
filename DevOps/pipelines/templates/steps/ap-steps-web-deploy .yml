@@ -1,0 +1,31 @@
+parameters:
+    - name: environment
+    - name: configuration
+stages:
+  - stage: Deploy_${{parameters.environment}}
+    displayName: ${{parameters.environment}}
+    dependsOn: Build_Web
+    variables:
+      - group: platform-web-${{parameters.configuration}}
+    jobs:
+    - deployment: platform_web_deploy_${{parameters.configuration}}
+      displayName: WEB Deploy ${{parameters.environment}}
+      environment: MI-Platform-${{parameters.environment}}
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - download: none
+            - checkout: none
+            - task: DownloadBuildArtifacts@1
+              inputs:
+                buildType: 'current'
+                downloadType: 'single'
+                artifactName: 'drop'
+                downloadPath: '$(System.ArtifactsDirectory)'
+            - task: CmdLine@2
+              displayName: 'Rename Config'
+              inputs:
+                workingDirectory: '$(System.ArtifactsDirectory)/drop/assets/config'
+                script: |
+                  cp -f 'app-${{ parameters.environment }}.config.js' 'app.config.js'
