@@ -1,0 +1,33 @@
+steps:
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core SDK'
+    inputs:
+    version: 7.x
+    performMultiLevelLookup: true
+
+  - task: DotNetCoreCLI@2
+    displayName: Restore
+    inputs:
+    command: restore
+    projects: '**/*.csproj'
+    restoreArguments: '--force'
+    feedsToUse: 'select'
+    noCache: true
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Build Functions'
+    inputs:
+    command: 'build'
+    projects: 'Functions/Functions.csproj'
+    arguments: '--output publish_output --configuration $(BuildConfiguration) --verbosity d'
+    
+  - task: ArchiveFiles@2
+    displayName: 'Archive files'
+    inputs:
+    rootFolderOrFile: 'publish_output/'
+    includeRootFolder: false
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact'
+    inputs:
+    PathtoPublish: '$(build.ArtifactStagingDirectory)'

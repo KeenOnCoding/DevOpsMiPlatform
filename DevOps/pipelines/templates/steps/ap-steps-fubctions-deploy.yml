@@ -1,0 +1,39 @@
+parameters:
+    - name: environment
+    - name: configuration
+    - name: subscription
+
+stages:
+  - stage: Deploy_${{parameters.environment}}
+    displayName: ${{parameters.environment}}
+    variables:
+    - group: platform-functions-${{parameters.configuration}}
+    dependsOn: Build
+    jobs:
+    - deployment: deploy
+      displayName: Deploy
+      environment: MI-Platform-${{parameters.environment}}
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - download: none
+            - checkout: none
+            - task: DownloadBuildArtifacts@1
+              inputs:
+                buildType: 'current'
+                downloadType: 'single'
+                artifactName: 'drop'
+                downloadPath: '$(System.ArtifactsDirectory)'
+            - task: AzureFunctionApp@1
+              inputs:
+                azureSubscription: '${{parameters.subscription}}'
+                appType: 'functionApp'
+                appName: 'func-platform-${{parameters.configuration}}'
+                package: '$(System.ArtifactsDirectory)/**/*.zip'
+                deploymentMethod: 'auto'
+            - task: AzurePowerShell@5
+              inputs:
+                azureSubscription: '${{parameters.subscription}}'
+                ScriptType: 'InlineScript'
+                azurePowerShellVersion: 'LatestVersion'

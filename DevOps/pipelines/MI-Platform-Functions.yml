@@ -1,0 +1,33 @@
+name: MI-Platform-Functions-CI-CD
+
+pool:
+  vmImage: 'windows-latest'
+  
+pr:
+  branches:
+    include:
+      - main
+
+trigger: none
+
+stages:
+  - stage: Build_Functions
+    displayName: Build Functions
+    pool: BuildServers-FSS-Audit
+    jobs:
+      - job: Build
+        displayName: Build
+        steps:
+          - template: templates/steps/ap-steps-functions-build.yml
+
+  - template: templates/steps/ap-steps-functions-deploy.yml
+    parameters:
+      azureSubscription: US-AZSUB-AME-AUD-MPI BACKEND INFRASTRUCTURE-NPD 
+      environment: Sandbox
+      configuration: sb
+  
+  - template: templates/steps/ap-steps-functions-deploy.yml
+    parameters:
+      azureSubscription: US-AZSUB-AME-AUD-MPI BACKEND INFRASTRUCTURE-NPD 
+      environment: DEV
+      configuration: dev
